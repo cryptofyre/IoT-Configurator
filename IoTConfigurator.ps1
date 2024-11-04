@@ -1239,7 +1239,7 @@ function Test-WingetInstalled {
 function Install-WindowsActivation {
     Update-Progress "Activating Windows..."
     if (-not $DryRun) {
-        & ([ScriptBlock]::Create((Invoke-RestMethod https://get.activated.win))) /HWID
+        & ([ScriptBlock]::Create((irm https://get.activated.win))) /HWID
     }
 }
 
