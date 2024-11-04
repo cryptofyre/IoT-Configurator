@@ -151,28 +151,6 @@ function Start-ElevatedSession {
     }
 }
 
-function Update-Progress {
-    param(
-        [string]$Status,
-        [int]$Step
-    )
-    
-    # Calculate percentage based on total steps
-    $percentage = [math]::Min(100, [math]::Round(($Step / $script:totalSteps) * 100))
-    
-    # Update UI elements if they exist
-    if ($UI -and $UI.SetProgress) {
-        & $UI.SetProgress $percentage $Status
-    }
-    
-    # Write to console if available
-    if ($UI -and $UI.WriteToConsole) {
-        & $UI.WriteToConsole $Status
-    } else {
-        Write-Host $Status
-    }
-}
-
 # Check and set execution policy
 function Set-RequiredExecutionPolicy {
     try {
@@ -942,7 +920,7 @@ function Install-SelectedBrowser {
             "Firefox" { winget install --id Mozilla.Firefox --accept-source-agreements --accept-package-agreements --silent }
             "Chrome" { winget install --id Google.Chrome --accept-source-agreements --accept-package-agreements --silent }
             "Edge" { winget install --id Microsoft.Edge --accept-source-agreements --accept-package-agreements --silent }
-        } 2>&1 | Out-String
+        }
         & $UI.WriteToConsole $output "Info"
     }
 }
@@ -1129,8 +1107,8 @@ function Install-WindowsActivation {
 
 function Start-InstallationProcess {
     # Calculate total steps based on selected options
+    Calculate-TotalSteps
     $script:currentStep = 0
-    $script:totalSteps = 24  # Increased total steps by 1
     
     try {
         # Ensure winget is installed
@@ -1155,8 +1133,8 @@ function Start-InstallationProcess {
             Install-WindowsActivation
         }
 
-        Update-Progress "Setup completed successfully!" $script:totalSteps
-        
+        Update-Progress "Setup completed successfully!"
+
         # Show completion message
         if (-not $DryRun) {
             [System.Windows.Forms.MessageBox]::Show(
