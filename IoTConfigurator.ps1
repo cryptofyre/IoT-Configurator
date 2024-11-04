@@ -1205,7 +1205,6 @@ try {
 }
 catch {
     Write-Error "A critical error occurred during setup initialization: $_"
-    & $UI.WriteToConsole "A critical error occurred during setup initialization: $_" "Error"
     exit 1
 }
 finally {
