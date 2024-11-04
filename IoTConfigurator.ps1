@@ -348,14 +348,14 @@ function New-SetupUI {
             Tooltip = "Updated version of Microsoft Paint"
         },
         @{
-            Name = "PowerToysCheckbox"
-            Text = "PowerToys"
-            Tooltip = "Set of utilities for power users"
-        },
-        @{
             Name = "PhotosCheckbox"
             Text = "Modern Photos"
             Tooltip = "Updated version of Windows Photos"
+        },
+        @{
+            Name = "PowerToysCheckbox"
+            Text = "PowerToys"
+            Tooltip = "Set of utilities for power users"
         }
     )
 
