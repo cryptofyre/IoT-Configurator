@@ -1091,9 +1091,6 @@ function Install-ModernApps {
     if ($UI.PhotosCheckbox.Checked) {
         Update-Progress "Installing Modern Photos..."
         if (-not $DryRun) {
-            $output = Add-AppPackage 'https://github.com/cryptofyre/IoT-Configurator/releases/download/assets/Microsoft.WindowsAppRuntime.1.5_5001.275.500.0_x64__8wekyb3d8bbwe.Msix' 2>&1 | Out-String
-            $UI.WriteToConsole.Invoke($output, "Info")
-
             $output = Add-AppPackage 'https://github.com/cryptofyre/IoT-Configurator/releases/download/assets/Microsoft.Windows.Photos_2024.11100.17007.0_neutral_._8wekyb3d8bbwe.Msixbundle' 2>&1 | Out-String
             $UI.WriteToConsole.Invoke($output, "Info")
         }
@@ -1221,7 +1218,9 @@ function Test-WingetInstalled {
         if (-not $DryRun) {
             $output = Add-AppxPackage 'https://github.com/cryptofyre/IoT-Configurator/releases/download/assets/Microsoft.UI.Xaml.2.8_8.2310.30001.0_x64.appx' 2>&1 | Out-String
             $UI.WriteToConsole.Invoke($output, "Info")
-            $output = Add-AppPackage 'https://github.com/cryptofyre/IoT-Configurator/releases/download/assets/Microsoft.VCLibs.140.00.UWPDesktop_14.0.33728.0_x64.appx' 2>&1 | Out-String
+            $output = Add-AppxPackage 'https://github.com/cryptofyre/IoT-Configurator/releases/download/assets/Microsoft.VCLibs.140.00.UWPDesktop_14.0.33728.0_x64.appx' 2>&1 | Out-String
+            $UI.WriteToConsole.Invoke($output, "Info")
+            $output = Add-AppPackage 'https://github.com/cryptofyre/IoT-Configurator/releases/download/assets/Microsoft.WindowsAppRuntime.1.5_5001.275.500.0_x64__8wekyb3d8bbwe.Msix' 2>&1 | Out-String
             $UI.WriteToConsole.Invoke($output, "Info")
         }
 
