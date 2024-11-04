@@ -55,9 +55,60 @@ $script:Colors = @{
 }
 
 # Initialize progress tracking
-$script:totalSteps = 0
+$script:totalSteps = 0  # Initialize to 0
 $script:currentStep = 0
 $script:tempDir = Join-Path $env:TEMP "Win11IoTSetup"
+
+# Calculate total steps based on selected options
+function Calculate-TotalSteps {
+    $steps = 0
+    # Basic Requirements
+    $steps += 2
+    # Media Components
+    $steps += 5
+    # Selected Browser
+    if ($UI.BrowserComboBox.SelectedItem) { $steps += 1 }
+    # Modern Apps
+    if ($UI.StoreCheckbox.Checked) { $steps += 1 }
+    if ($UI.TerminalCheckbox.Checked) { $steps += 1 }
+    if ($UI.NotepadCheckbox.Checked) { $steps += 1 }
+    if ($UI.PaintCheckbox.Checked) { $steps += 1 }
+    # Windows Features
+    if ($UI.SandboxCheckbox.Checked) { $steps += 2 }
+    if ($UI.WSLCheckbox.Checked) { $steps += 1 }
+    # Development Tools
+    if ($UI.VSCheckbox.Checked) { $steps += 1 }
+    if ($UI.VSCodeCheckbox.Checked) { $steps += 1 }
+    if ($UI.DotNetCheckbox.Checked) { $steps += 3 }
+    if ($UI.NodeCheckbox.Checked) { $steps += 1 }
+    if ($UI.GoCheckbox.Checked) { $steps += 1 }
+    if ($UI.RustCheckbox.Checked) { $steps += 1 }
+    if ($UI.LLVMCheckbox.Checked) { $steps += 1 }
+    if ($UI.ScoopCheckbox.Checked) { $steps += 1 }
+    if ($UI.ChocoCheckbox.Checked) { $steps += 1 }
+    # Windows Activation
+    if ($UI.ActivateWindowsCheckbox.Checked) { $steps += 1 }
+    $script:totalSteps = $steps
+}
+
+# Update progress bar
+function Update-Progress {
+    param(
+        [string]$Status
+    )
+    $script:currentStep++
+    $percentage = [math]::Min(100, [math]::Round(($script:currentStep / $script:totalSteps) * 100))
+    
+    if ($UI -and $UI.SetProgress) {
+        & $UI.SetProgress $percentage $Status
+    }
+    
+    if ($UI -and $UI.WriteToConsole) {
+        & $UI.WriteToConsole $Status "Info"
+    } else {
+        Write-Host $Status
+    }
+}
 
 # Get the current script path
 $scriptPath = $MyInvocation.MyCommand.Path
@@ -105,7 +156,7 @@ function Update-Progress {
         [string]$Status,
         [int]$Step
     )
-
+    
     # Calculate percentage based on total steps
     $percentage = [math]::Min(100, [math]::Round(($Step / $script:totalSteps) * 100))
     
@@ -800,68 +851,81 @@ function New-SetupUI {
 
 # Function to install basic requirements
 function Install-BasicRequirements {
-    Update-Progress "Installing PowerShell 7..." 1
+    Update-Progress "Installing PowerShell 7..."
     if (-not $DryRun) {
-        winget install --id Microsoft.Powershell --source winget --accept-source-agreements --accept-package-agreements
+        $output = winget install --id Microsoft.Powershell --source winget --accept-source-agreements --accept-package-agreements --silent 2>&1 | Out-String
+        & $UI.WriteToConsole $output "Info"
     }
 
-    Update-Progress "Installing Uniget..." 2
+    Update-Progress "Installing UniGet..."
     if (-not $DryRun) {
-        winget install --exact --id MartiCliment.UniGetUI --source winget --accept-source-agreements --accept-package-agreements
+        $output = winget install --exact --id MartiCliment.UniGetUI --source winget --accept-source-agreements --accept-package-agreements --silent 2>&1 | Out-String
+        & $UI.WriteToConsole $output "Info"
     }
 }
 
 # Function to install media components
 function Install-MediaComponents {
-    Update-Progress "Installing HEVC Extensions..." 4
+    Update-Progress "Installing HEVC Extensions..."
     if (-not $DryRun) {
         $hevcUrl = "https://github.com/cryptofyre/IoT-Configurator/releases/download/assets/Microsoft.HEVCVideoExtensions_2.2.10.0_neutral_._8wekyb3d8bbwe.AppxBundle"
         $hevcPath = Join-Path $script:tempDir "HEVCVideoExtension.appxbundle"
-        Start-BitsTransfer -Source $hevcUrl -Destination $hevcPath
-        Add-AppxPackage -Path $hevcPath
+        $output = Start-BitsTransfer -Source $hevcUrl -Destination $hevcPath -ErrorAction SilentlyContinue 2>&1 | Out-String
+        & $UI.WriteToConsole $output "Info"
+        $output = Add-AppxPackage -Path $hevcPath 2>&1 | Out-String
+        & $UI.WriteToConsole $output "Info"
     }
 
-    Update-Progress "Installing Web Media Extensions..." 5
+    Update-Progress "Installing Web Media Extensions..."
     if (-not $DryRun) {
         $webMediaUrl = "https://github.com/cryptofyre/IoT-Configurator/releases/download/assets/Microsoft.WebMediaExtensions_1.1.1295.0_neutral_._8wekyb3d8bbwe.AppxBundle"
         $webMediaPath = Join-Path $script:tempDir "WebMediaExtensions.appxbundle"
-        Start-BitsTransfer -Source $webMediaUrl -Destination $webMediaPath
-        Add-AppxPackage -Path $webMediaPath
+        $output = Start-BitsTransfer -Source $webMediaUrl -Destination $webMediaPath -ErrorAction SilentlyContinue 2>&1 | Out-String
+        & $UI.WriteToConsole $output "Info"
+        $output = Add-AppxPackage -Path $webMediaPath 2>&1 | Out-String
+        & $UI.WriteToConsole $output "Info"
     }
 
-    Update-Progress "Installing Media Feature Pack..." 6
+    Update-Progress "Installing Media Feature Pack..."
     if (-not $DryRun) {
-        Get-WindowsCapability -online | Where-Object -Property name -like "*media*" | Add-WindowsCapability -Online
+        $output = Get-WindowsCapability -online | Where-Object -Property name -like "*media*" | Add-WindowsCapability -Online 2>&1 | Out-String
+        & $UI.WriteToConsole $output "Info"
     }
 
     # Install HEIF Image Extensions
-    Update-Progress "Installing HEIF Image Extensions..." 9
+    Update-Progress "Installing HEIF Image Extensions..."
     if (-not $DryRun) {
         # Download HEIF Image Extensions installer
         $heifUrl = "https://github.com/cryptofyre/IoT-Configurator/releases/download/assets/Microsoft.HEIFImageExtension_1.2.3.0_neutral_._8wekyb3d8bbwe.AppxBundle"
         $heifPath = Join-Path $script:tempDir "HEIFImageExtensions.appxbundle"
-        Start-BitsTransfer -Source $heifUrl -Destination $heifPath
-        Add-AppxPackage -Path $heifPath
+        $output = Start-BitsTransfer -Source $heifUrl -Destination $heifPath -ErrorAction SilentlyContinue 2>&1 | Out-String
+        & $UI.WriteToConsole $output "Info"
+        $output = Add-AppxPackage -Path $heifPath 2>&1 | Out-String
+        & $UI.WriteToConsole $output "Info"
     }
 
     # Install VP9 Video Extensions
-    Update-Progress "Installing VP9 Video Extensions..." 10
+    Update-Progress "Installing VP9 Video Extensions..."
     if (-not $DryRun) {
         # Download VP9 Video Extensions installer
         $vp9Url = "https://github.com/cryptofyre/IoT-Configurator/releases/download/assets/Microsoft.VP9VideoExtensions_1.1.451.0_neutral_._8wekyb3d8bbwe.AppxBundle"
         $vp9Path = Join-Path $script:tempDir "VP9VideoExtensions.appxbundle"
-        Start-BitsTransfer -Source $vp9Url -Destination $vp9Path
-        Add-AppxPackage -Path $vp9Path
+        $output = Start-BitsTransfer -Source $vp9Url -Destination $vp9Path -ErrorAction SilentlyContinue 2>&1 | Out-String
+        & $UI.WriteToConsole $output "Info"
+        $output = Add-AppxPackage -Path $vp9Path 2>&1 | Out-String
+        & $UI.WriteToConsole $output "Info"
     }
 
-    Update-Progress "Installing .NET Runtime..." 7
+    Update-Progress "Installing .NET Runtime..."
     if (-not $DryRun) {
-        winget install --id Microsoft.DotNet.Runtime.6 --source winget --accept-source-agreements --accept-package-agreements
+        $output = winget install --id Microsoft.DotNet.Runtime.6 --source winget --accept-source-agreements --accept-package-agreements --silent 2>&1 | Out-String
+        & $UI.WriteToConsole $output "Info"
     }
 
-    Update-Progress "Installing VC++ Redistributable..." 8
+    Update-Progress "Installing VC++ Redistributable..."
     if (-not $DryRun) {
-        winget install --id Microsoft.VCRedist.2015+.x64 --source winget --accept-source-agreements --accept-package-agreements
+        $output = winget install --id Microsoft.VCRedist.2015+.x64 --source winget --accept-source-agreements --accept-package-agreements --silent 2>&1 | Out-String
+        & $UI.WriteToConsole $output "Info"
     }
 }
 
@@ -871,44 +935,49 @@ function Install-SelectedBrowser {
         [string]$BrowserChoice
     )
     
-    Update-Progress "Installing $BrowserChoice..." 7
+    Update-Progress "Installing $BrowserChoice..."
     if (-not $DryRun) {
-        switch ($BrowserChoice) {
-            "Zen Browser" { winget install --id Zen-Team.Zen-Browser.Optimized --accept-source-agreements --accept-package-agreements }
-            "Firefox" { winget install --id Mozilla.Firefox --accept-source-agreements --accept-package-agreements }
-            "Chrome" { winget install --id Google.Chrome --accept-source-agreements --accept-package-agreements }
-            "Edge" { winget install --id Microsoft.Edge --accept-source-agreements --accept-package-agreements }
-        }
+        $output = switch ($BrowserChoice) {
+            "Zen Browser" { winget install --id Zen-Team.Zen-Browser.Optimized --accept-source-agreements --accept-package-agreements --silent }
+            "Firefox" { winget install --id Mozilla.Firefox --accept-source-agreements --accept-package-agreements --silent }
+            "Chrome" { winget install --id Google.Chrome --accept-source-agreements --accept-package-agreements --silent }
+            "Edge" { winget install --id Microsoft.Edge --accept-source-agreements --accept-package-agreements --silent }
+        } 2>&1 | Out-String
+        & $UI.WriteToConsole $output "Info"
     }
 }
 
 # Function to install modern Windows apps
 function Install-ModernApps {
     if ($UI.StoreCheckbox.Checked) {
-        Update-Progress "Installing Microsoft Store..." 3
+        Update-Progress "Installing Microsoft Store..."
         if (-not $DryRun) {
-            Add-AppxPackage -RegisterByFamilyName -MainPackage "Microsoft.WindowsStore_8wekyb3d8bbwe"
+            $output = Add-AppxPackage -RegisterByFamilyName -MainPackage "Microsoft.WindowsStore_8wekyb3d8bbwe" 2>&1 | Out-String
+            & $UI.WriteToConsole $output "Info"
         }
     }
 
     if ($UI.TerminalCheckbox.Checked) {
-        Update-Progress "Installing Windows Terminal..." 4
+        Update-Progress "Installing Windows Terminal..."
         if (-not $DryRun) { 
-            winget install --id Microsoft.WindowsTerminal --source winget --accept-source-agreements --accept-package-agreements
+            $output = winget install --id Microsoft.WindowsTerminal --source winget --accept-source-agreements --accept-package-agreements --silent 2>&1 | Out-String
+            & $UI.WriteToConsole $output "Info"
         }
     }
 
     if ($UI.NotepadCheckbox.Checked) {
-        Update-Progress "Installing Modern Notepad..." 5
+        Update-Progress "Installing Modern Notepad..."
         if (-not $DryRun) {
-            winget install --id Microsoft.Notepad --source winget --accept-source-agreements --accept-package-agreements
+            $output = winget install --id Microsoft.Notepad --source winget --accept-source-agreements --accept-package-agreements --silent 2>&1 | Out-String
+            & $UI.WriteToConsole $output "Info"
         }
     }
 
     if ($UI.PaintCheckbox.Checked) {
-        Update-Progress "Installing Modern Paint..." 6
+        Update-Progress "Installing Modern Paint..."
         if (-not $DryRun) {
-            winget install --id Microsoft.Paint --source winget --accept-source-agreements --accept-package-agreements
+            $output = winget install --id Microsoft.Paint --source winget --accept-source-agreements --accept-package-agreements --silent 2>&1 | Out-String
+            & $UI.WriteToConsole $output "Info"
         }
     }
 }
@@ -917,24 +986,28 @@ function Install-ModernApps {
 function Enable-WindowsFeatures {
     # Enable Hyper-V and Virtual Machine Platform if either Sandbox or WSL is selected
     if ($UI.SandboxCheckbox.Checked -or $UI.WSLCheckbox.Checked) {
-        Update-Progress "Enabling Hyper-V..." 10
+        Update-Progress "Enabling Hyper-V..."
         if (-not $DryRun) {
-            Enable-WindowsOptionalFeature -Online -FeatureName "VirtualMachinePlatform" -All -NoRestart  # Enable Virtual Machine Platform
-            Enable-WindowsOptionalFeature -Online -FeatureName "Microsoft-Hyper-V-All" -All -NoRestart
+            $output = Enable-WindowsOptionalFeature -Online -FeatureName "VirtualMachinePlatform" -All -NoRestart 2>&1 | Out-String  # Enable Virtual Machine Platform
+            & $UI.WriteToConsole $output "Info"
+            $output = Enable-WindowsOptionalFeature -Online -FeatureName "Microsoft-Hyper-V-All" -All -NoRestart 2>&1 | Out-String
+            & $UI.WriteToConsole $output "Info"
         }
     }
 
     if ($UI.SandboxCheckbox.Checked) {
-        Update-Progress "Enabling Windows Sandbox..." 11
+        Update-Progress "Enabling Windows Sandbox..."
         if (-not $DryRun) {
-            Enable-WindowsOptionalFeature -Online -FeatureName "Containers-DisposableClientVM" -All -NoRestart
+            $output = Enable-WindowsOptionalFeature -Online -FeatureName "Containers-DisposableClientVM" -All -NoRestart 2>&1 | Out-String
+            & $UI.WriteToConsole $output "Info"
         }
     }
 
     if ($UI.WSLCheckbox.Checked) {
-        Update-Progress "Enabling WSL..." 12
+        Update-Progress "Enabling WSL..."
         if (-not $DryRun) {
-            Enable-WindowsOptionalFeature -Online -FeatureName "Microsoft-Windows-Subsystem-Linux" -All -NoRestart  # Enable WSL
+            $output = Enable-WindowsOptionalFeature -Online -FeatureName "Microsoft-Windows-Subsystem-Linux" -All -NoRestart 2>&1 | Out-String  # Enable WSL
+            & $UI.WriteToConsole $output "Info"
         }
     }
 }
@@ -942,72 +1015,82 @@ function Enable-WindowsFeatures {
 # Function to install development tools
 function Install-DevelopmentTools {
     if ($UI.VSCheckbox.Checked) {
-        Update-Progress "Installing Visual Studio..." 13
+        Update-Progress "Installing Visual Studio..."
         if (-not $DryRun) {
-            winget install --id Microsoft.VisualStudio.2022.Community --source winget --accept-source-agreements --accept-package-agreements
+            $output = winget install --id Microsoft.VisualStudio.2022.Community --source winget --accept-source-agreements --accept-package-agreements --silent 2>&1 | Out-String
+            & $UI.WriteToConsole $output "Info"
         }
     }
 
     if ($UI.VSCodeCheckbox.Checked) {
-        Update-Progress "Installing VS Code..." 14
+        Update-Progress "Installing VS Code..."
         if (-not $DryRun) {
-            winget install --id Microsoft.VSCode --source winget --accept-source-agreements --accept-package-agreements
+            $output = winget install --id Microsoft.VisualStudioCode --source winget --accept-source-agreements --accept-package-agreements --silent 2>&1 | Out-String
+            & $UI.WriteToConsole $output "Info"
         }
     }
 
     if ($UI.DotNetCheckbox.Checked) {
         $dotnetVersions = @("8.0", "7.0", "6.0")
         foreach ($version in $dotnetVersions) {
-            Update-Progress "Installing .NET SDK $version..." 15
+            Update-Progress "Installing .NET SDK $version..."
             if (-not $DryRun) {
-                winget install --id Microsoft.DotNet.SDK.$version --source winget --accept-source-agreements --accept-package-agreements
+                $output = winget install --id Microsoft.DotNet.SDK.$version --source winget --accept-source-agreements --accept-package-agreements --silent 2>&1 | Out-String
+                & $UI.WriteToConsole $output "Info"
             }
         }
     }
 
     if ($UI.NodeCheckbox.Checked) {
-        Update-Progress "Installing Node.js LTS..." 16
+        Update-Progress "Installing Node.js LTS..."
         if (-not $DryRun) {
-            winget install --id OpenJS.NodeJS.LTS --source winget --accept-source-agreements --accept-package-agreements
+            $output = winget install --id OpenJS.NodeJS.LTS --source winget --accept-source-agreements --accept-package-agreements --silent 2>&1 | Out-String
+            & $UI.WriteToConsole $output "Info"
         }
     }
 
     if ($UI.GoCheckbox.Checked) {
-        Update-Progress "Installing Go..." 17
+        Update-Progress "Installing Go..."
         if (-not $DryRun) {
-            winget install --id GoLang.Go --source winget --accept-source-agreements --accept-package-agreements
+            $output = winget install --id GoLang.Go --source winget --accept-source-agreements --accept-package-agreements --silent 2>&1 | Out-String
+            & $UI.WriteToConsole $output "Info"
         }
     }
 
     if ($UI.RustCheckbox.Checked) {
-        Update-Progress "Installing Rust..." 18
+        Update-Progress "Installing Rust..."
         if (-not $DryRun) {
             $rustupPath = Join-Path $script:tempDir "rustup-init.exe"
-            Start-BitsTransfer -Source "https://win.rustup.rs" -Destination "$rustupPath"
-            Start-Process -FilePath $rustupPath -ArgumentList "-y" -Wait
+            $output = Start-BitsTransfer -Source "https://win.rustup.rs" -Destination "$rustupPath" -ErrorAction SilentlyContinue 2>&1 | Out-String
+            & $UI.WriteToConsole $output "Info"
+            $output = Start-Process -FilePath $rustupPath -ArgumentList "-y" -Wait 2>&1 | Out-String
+            & $UI.WriteToConsole $output "Info"
         }
     }
 
     if ($UI.LLVMCheckbox.Checked) {
-        Update-Progress "Installing LLVM..." 19
+        Update-Progress "Installing LLVM..."
         if (-not $DryRun) {
-            winget install --id LLVM.LLVM --source winget --accept-source-agreements --accept-package-agreements
+            $output = winget install --id LLVM.LLVM --source winget --accept-source-agreements --accept-package-agreements --silent 2>&1 | Out-String
+            & $UI.WriteToConsole $output "Info"
         }
     }
 
     if ($UI.ScoopCheckbox.Checked) {
-        Update-Progress "Installing Scoop..." 20
+        Update-Progress "Installing Scoop..."
         if (-not $DryRun) {
-            Invoke-Expression "& {$(Invoke-RestMethod get.scoop.sh)}"
+            $output = Invoke-Expression "& {$(Invoke-RestMethod get.scoop.sh)}" 2>&1 | Out-String
+            & $UI.WriteToConsole $output "Info"
         }
     }
 
     if ($UI.ChocoCheckbox.Checked) {
-        Update-Progress "Installing Chocolatey..." 21
+        Update-Progress "Installing Chocolatey..."
         if (-not $DryRun) {
             Set-ExecutionPolicy Bypass -Scope Process -Force
             [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
-            Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
+            $output = Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1')) 2>&1 | Out-String
+            & $UI.WriteToConsole $output "Info"
         }
     }
 }
@@ -1016,26 +1099,31 @@ function Install-DevelopmentTools {
 function Ensure-WingetInstalled {
     if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
         # Install VCLibs dependency for winget
-        Update-Progress "Installing VCLibs..." 0
+        Update-Progress "Installing VCLibs..."
         if (-not $DryRun) {
-            Add-AppxPackage 'https://github.com/cryptofyre/IoT-Configurator/releases/download/assets/Microsoft.UI.Xaml.2.8_8.2310.30001.0_x64.appx'
-            Add-AppPackage 'https://github.com/cryptofyre/IoT-Configurator/releases/download/assets/Microsoft.VCLibs.140.00.UWPDesktop_14.0.33728.0_x64.appx'
+            $output = Add-AppxPackage 'https://github.com/cryptofyre/IoT-Configurator/releases/download/assets/Microsoft.UI.Xaml.2.8_8.2310.30001.0_x64.appx' 2>&1 | Out-String
+            & $UI.WriteToConsole $output "Info"
+            $output = Add-AppPackage 'https://github.com/cryptofyre/IoT-Configurator/releases/download/assets/Microsoft.VCLibs.140.00.UWPDesktop_14.0.33728.0_x64.appx' 2>&1 | Out-String
+            & $UI.WriteToConsole $output "Info"
         }
 
-        Update-Progress "Installing Winget..." 0
+        Update-Progress "Installing Winget..."
         if (-not $DryRun) {
             $wingetUrl = "https://github.com/microsoft/winget-cli/releases/download/v1.9.25180/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle"
             $wingetPath = Join-Path $script:tempDir "Microsoft.DesktopAppInstaller.msixbundle"
-            Start-BitsTransfer -Source $wingetUrl -Destination $wingetPath
-            Add-AppxPackage -Path $wingetPath
+            $output = Start-BitsTransfer -Source $wingetUrl -Destination $wingetPath -ErrorAction SilentlyContinue 2>&1 | Out-String
+            & $UI.WriteToConsole $output "Info"
+            $output = Add-AppxPackage -Path $wingetPath 2>&1 | Out-String
+            & $UI.WriteToConsole $output "Info"
         }
     }
 }
 
 function Install-WindowsActivation {
-    Update-Progress "Activating Windows..." 22
+    Update-Progress "Activating Windows..."
     if (-not $DryRun) {
-        & ([ScriptBlock]::Create((irm https://get.activated.win))) /HWID
+        $output = & ([ScriptBlock]::Create((irm https://get.activated.win))) /HWID 2>&1 | Out-String
+        & $UI.WriteToConsole $output "Info"
     }
 }
 
@@ -1107,6 +1195,9 @@ try {
 
     # Initialize UI requirements
     Initialize-Requirements
+
+    # Calculate total steps before starting installation
+    Calculate-TotalSteps
 
     # Create and show UI
     $UI = New-SetupUI
