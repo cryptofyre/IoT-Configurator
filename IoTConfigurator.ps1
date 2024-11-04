@@ -346,6 +346,16 @@ function New-SetupUI {
             Name = "PaintCheckbox"
             Text = "Modern Paint"
             Tooltip = "Updated version of Microsoft Paint"
+        },
+        @{
+            Name = "PowerToysCheckbox"
+            Text = "PowerToys"
+            Tooltip = "Set of utilities for power users"
+        },
+        @{
+            Name = "PhotosCheckbox"
+            Text = "Modern Photos"
+            Tooltip = "Updated version of Windows Photos"
         }
     )
 
@@ -624,8 +634,14 @@ function New-SetupUI {
     $affinityLink.Margin = New-Object System.Windows.Forms.Padding(5)
 
     # Link Click Events
-    $ciderLink.Add_LinkClicked({ Start-Process $ciderLink.Links[0].LinkData })
-    $affinityLink.Add_LinkClicked({ Start-Process $affinityLink.Links[0].LinkData })
+    $ciderLink.Add_LinkClicked({
+        param($sender, $e)
+        Start-Process $e.Link.LinkData
+    })
+    $affinityLink.Add_LinkClicked({
+        param($sender, $e)
+        Start-Process $e.Link.LinkData
+    })
 
     $programsLayout.Controls.Add($ciderLink)
     $programsLayout.Controls.Add($affinityLink)
@@ -852,7 +868,7 @@ By default, the following components are installed:
         if ($null -ne $UI.WriteToConsole) {
             $UI.WriteToConsole.Invoke("Setup initialized. Waiting for user input...", "Info")
         } else {
-            Write-Error "WriteToConsole function is not initialized."
+            WriteToConsole "Setup initialized. Waiting for user input..." "Info"
         }
     })
 
@@ -863,7 +879,7 @@ By default, the following components are installed:
         ProgressBar = $progressBar
         StatusLabel = $statusLabel
         ConsoleOutput = $consoleOutput
-        WriteToConsole = $WriteToConsole  # Ensure WriteToConsole is assigned here
+        WriteToConsole = $function:WriteToConsole  # Ensure WriteToConsole is assigned here
         
         # Basic Setup Tab Elements
         StoreCheckbox = $checkboxes["StoreCheckbox"]
@@ -1051,7 +1067,7 @@ function Install-ModernApps {
     if ($UI.NotepadCheckbox.Checked) {
         Update-Progress "Installing Modern Notepad..."
         if (-not $DryRun) {
-            $output = winget install --id Microsoft.Notepad --source winget --accept-source-agreements --accept-package-agreements --silent 2>&1 | Out-String
+            $output = Add-AppPackage 'https://github.com/cryptofyre/IoT-Configurator/releases/download/assets/Microsoft.WindowsNotepad_11.2409.9.0_neutral_._8wekyb3d8bbwe.Msixbundle' 2>&1 | Out-String
             & $UI.WriteToConsole $output "Info"
         }
     }
@@ -1059,7 +1075,26 @@ function Install-ModernApps {
     if ($UI.PaintCheckbox.Checked) {
         Update-Progress "Installing Modern Paint..."
         if (-not $DryRun) {
-            $output = winget install --id Microsoft.Paint --source winget --accept-source-agreements --accept-package-agreements --silent 2>&1 | Out-String
+            $output = Add-AppPackage 'https://github.com/cryptofyre/IoT-Configurator/releases/download/assets/Microsoft.Paint_11.2408.30.0_neutral_._8wekyb3d8bbwe.Msixbundle' 2>&1 | Out-String
+            & $UI.WriteToConsole $output "Info"
+        }
+    }
+
+    if ($UI.PowerToysCheckbox.Checked) {
+        Update-Progress "Installing PowerToys..."
+        if (-not $DryRun) {
+            $output = winget install --id Microsoft.PowerToys --source winget --accept-source-agreements --accept-package-agreements --silent 2>&1 | Out-String
+            & $UI.WriteToConsole $output "Info"
+        }
+    }
+
+    if ($UI.PhotosCheckbox.Checked) {
+        Update-Progress "Installing Modern Photos..."
+        if (-not $DryRun) {
+            $output = Add-AppPackage 'https://github.com/cryptofyre/IoT-Configurator/releases/download/assets/Microsoft.WindowsAppRuntime.1.5_5001.275.500.0_x64__8wekyb3d8bbwe.Msix' 2>&1 | Out-String
+            & $UI.WriteToConsole $output "Info"
+
+            $output = Add-AppPackage 'https://github.com/cryptofyre/IoT-Configurator/releases/download/assets/Microsoft.Windows.Photos_2024.11100.17007.0_neutral_._8wekyb3d8bbwe.Msixbundle' 2>&1 | Out-String
             & $UI.WriteToConsole $output "Info"
         }
     }
