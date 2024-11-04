@@ -802,12 +802,12 @@ function New-SetupUI {
 function Install-BasicRequirements {
     Update-Progress "Installing PowerShell 7..." 1
     if (-not $DryRun) {
-        winget install --id Microsoft.Powershell --source winget
+        winget install --id Microsoft.Powershell --source winget --accept-source-agreements --accept-package-agreements
     }
 
     Update-Progress "Installing Uniget..." 2
     if (-not $DryRun) {
-        winget install --exact --id MartiCliment.UniGetUI --source winget
+        winget install --exact --id MartiCliment.UniGetUI --source winget --accept-source-agreements --accept-package-agreements
     }
 }
 
@@ -856,12 +856,12 @@ function Install-MediaComponents {
 
     Update-Progress "Installing .NET Runtime..." 7
     if (-not $DryRun) {
-        winget install --id Microsoft.DotNet.Runtime.6 --source winget
+        winget install --id Microsoft.DotNet.Runtime.6 --source winget --accept-source-agreements --accept-package-agreements
     }
 
     Update-Progress "Installing VC++ Redistributable..." 8
     if (-not $DryRun) {
-        winget install --id Microsoft.VCRedist.2015+.x64 --source winget
+        winget install --id Microsoft.VCRedist.2015+.x64 --source winget --accept-source-agreements --accept-package-agreements
     }
 }
 
@@ -874,10 +874,10 @@ function Install-SelectedBrowser {
     Update-Progress "Installing $BrowserChoice..." 7
     if (-not $DryRun) {
         switch ($BrowserChoice) {
-            "Zen Browser" { winget install --id Zen-Team.Zen-Browser }
-            "Firefox" { winget install --id Mozilla.Firefox }
-            "Chrome" { winget install --id Google.Chrome }
-            "Edge" { winget install --id Microsoft.Edge }
+            "Zen Browser" { winget install --id Zen-Team.Zen-Browser.Optimized --accept-source-agreements --accept-package-agreements }
+            "Firefox" { winget install --id Mozilla.Firefox --accept-source-agreements --accept-package-agreements }
+            "Chrome" { winget install --id Google.Chrome --accept-source-agreements --accept-package-agreements }
+            "Edge" { winget install --id Microsoft.Edge --accept-source-agreements --accept-package-agreements }
         }
     }
 }
@@ -893,22 +893,22 @@ function Install-ModernApps {
 
     if ($UI.TerminalCheckbox.Checked) {
         Update-Progress "Installing Windows Terminal..." 4
-        if (-not $DryRun) {
-            winget install --id Microsoft.WindowsTerminal --source winget
+        if (-not $DryRun) { 
+            winget install --id Microsoft.WindowsTerminal --source winget --accept-source-agreements --accept-package-agreements
         }
     }
 
     if ($UI.NotepadCheckbox.Checked) {
         Update-Progress "Installing Modern Notepad..." 5
         if (-not $DryRun) {
-            winget install --id Microsoft.Notepad --source winget
+            winget install --id Microsoft.Notepad --source winget --accept-source-agreements --accept-package-agreements
         }
     }
 
     if ($UI.PaintCheckbox.Checked) {
         Update-Progress "Installing Modern Paint..." 6
         if (-not $DryRun) {
-            winget install --id Microsoft.Paint --source winget
+            winget install --id Microsoft.Paint --source winget --accept-source-agreements --accept-package-agreements
         }
     }
 }
@@ -944,14 +944,14 @@ function Install-DevelopmentTools {
     if ($UI.VSCheckbox.Checked) {
         Update-Progress "Installing Visual Studio..." 13
         if (-not $DryRun) {
-            winget install --id Microsoft.VisualStudio.2022.Community --source winget
+            winget install --id Microsoft.VisualStudio.2022.Community --source winget --accept-source-agreements --accept-package-agreements
         }
     }
 
     if ($UI.VSCodeCheckbox.Checked) {
         Update-Progress "Installing VS Code..." 14
         if (-not $DryRun) {
-            winget install --id Microsoft.VSCode --source winget
+            winget install --id Microsoft.VSCode --source winget --accept-source-agreements --accept-package-agreements
         }
     }
 
@@ -960,7 +960,7 @@ function Install-DevelopmentTools {
         foreach ($version in $dotnetVersions) {
             Update-Progress "Installing .NET SDK $version..." 15
             if (-not $DryRun) {
-                winget install --id Microsoft.DotNet.SDK.$version --source winget
+                winget install --id Microsoft.DotNet.SDK.$version --source winget --accept-source-agreements --accept-package-agreements
             }
         }
     }
@@ -968,14 +968,14 @@ function Install-DevelopmentTools {
     if ($UI.NodeCheckbox.Checked) {
         Update-Progress "Installing Node.js LTS..." 16
         if (-not $DryRun) {
-            winget install --id OpenJS.NodeJS.LTS --source winget
+            winget install --id OpenJS.NodeJS.LTS --source winget --accept-source-agreements --accept-package-agreements
         }
     }
 
     if ($UI.GoCheckbox.Checked) {
         Update-Progress "Installing Go..." 17
         if (-not $DryRun) {
-            winget install --id GoLang.Go --source winget
+            winget install --id GoLang.Go --source winget --accept-source-agreements --accept-package-agreements
         }
     }
 
@@ -991,7 +991,7 @@ function Install-DevelopmentTools {
     if ($UI.LLVMCheckbox.Checked) {
         Update-Progress "Installing LLVM..." 19
         if (-not $DryRun) {
-            winget install --id LLVM.LLVM --source winget
+            winget install --id LLVM.LLVM --source winget --accept-source-agreements --accept-package-agreements
         }
     }
 
