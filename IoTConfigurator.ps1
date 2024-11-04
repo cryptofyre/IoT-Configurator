@@ -817,7 +817,7 @@ function Install-BasicRequirements {
 function Install-MediaComponents {
     Update-Progress "Installing HEVC Extensions..." 4
     if (-not $DryRun) {
-        $hevcUrl = "http://tlu.dl.delivery.mp.microsoft.com/filestreamingservice/files/94091873-fe5d-49a1-89c2-5f8194d3715f?P1=1730712157&P2=404&P3=2&P4=K6x5FwuILwHyd69Uj6G29jkBppk323rCWF2NOTnaVKfanrNQfyE6fc4gO5fp02uW7Pf9FSwAskO8%2fBLN21SWXg%3d%3d"
+        $hevcUrl = "https://github.com/cryptofyre/IoT-Configurator/releases/download/assets/Microsoft.HEVCVideoExtensions_2.2.10.0_neutral_._8wekyb3d8bbwe.AppxBundle"
         $hevcPath = Join-Path $script:tempDir "HEVCVideoExtension.appxbundle"
         Start-BitsTransfer -Source $hevcUrl -Destination $hevcPath
         Add-AppxPackage -Path $hevcPath
@@ -825,7 +825,7 @@ function Install-MediaComponents {
 
     Update-Progress "Installing Web Media Extensions..." 5
     if (-not $DryRun) {
-        $webMediaUrl = "http://tlu.dl.delivery.mp.microsoft.com/filestreamingservice/files/a91cad94-456f-4333-8bd4-e9403e83fcd0?P1=1730712178&P2=404&P3=2&P4=BLAA8MwwJFmh9w3sFiX%2bGHIeeEPLtFd6bz6KIh9FTaeN6Vwru%2fA1FqheB%2bU3VBXBgRtAfC%2bTSmEXiKqS8D%2b%2blQ%3d%3d"
+        $webMediaUrl = "https://github.com/cryptofyre/IoT-Configurator/releases/download/assets/Microsoft.WebMediaExtensions_1.1.1295.0_neutral_._8wekyb3d8bbwe.AppxBundle"
         $webMediaPath = Join-Path $script:tempDir "WebMediaExtensions.appxbundle"
         Start-BitsTransfer -Source $webMediaUrl -Destination $webMediaPath
         Add-AppxPackage -Path $webMediaPath
@@ -840,7 +840,7 @@ function Install-MediaComponents {
     Update-Progress "Installing HEIF Image Extensions..." 9
     if (-not $DryRun) {
         # Download HEIF Image Extensions installer
-        $heifUrl = "http://tlu.dl.delivery.mp.microsoft.com/filestreamingservice/files/4ffb7a09-8860-48d1-9d8d-5cb7655af9c5?P1=1730712725&P2=404&P3=2&P4=WLlbuxdJQtRKBMss45KxO7Uupl3DPRGPYMqKzXdbPnkDtkAVq%2fsLDAi8ECoXYLKNpaoKX5RZ3rlfMSQw1WiTDA%3d%3d"
+        $heifUrl = "https://github.com/cryptofyre/IoT-Configurator/releases/download/assets/Microsoft.HEIFImageExtension_1.2.3.0_neutral_._8wekyb3d8bbwe.AppxBundle"
         $heifPath = Join-Path $script:tempDir "HEIFImageExtensions.appxbundle"
         Start-BitsTransfer -Source $heifUrl -Destination $heifPath
         Add-AppxPackage -Path $heifPath
@@ -850,7 +850,7 @@ function Install-MediaComponents {
     Update-Progress "Installing VP9 Video Extensions..." 10
     if (-not $DryRun) {
         # Download VP9 Video Extensions installer
-        $vp9Url = "http://tlu.dl.delivery.mp.microsoft.com/filestreamingservice/files/fbcd5fa5-922e-49ee-8a11-39eb78f45764?P1=1730712770&P2=404&P3=2&P4=dms%2fMtk1IrzcH1j220oQ7alpHLKwPhS%2bqbYKP3ZPyb8KV6n1cUWqLX%2fJPPqyq2p%2fDOCriTh2yAc4HRZTDDi2CA%3d%3d"
+        $vp9Url = "https://github.com/cryptofyre/IoT-Configurator/releases/download/assets/Microsoft.VP9VideoExtensions_1.1.451.0_neutral_._8wekyb3d8bbwe.AppxBundle"
         $vp9Path = Join-Path $script:tempDir "VP9VideoExtensions.appxbundle"
         Start-BitsTransfer -Source $vp9Url -Destination $vp9Path
         Add-AppxPackage -Path $vp9Path
