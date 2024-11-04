@@ -1019,7 +1019,7 @@ function Ensure-WingetInstalled {
     if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
         Update-Progress "Installing Winget..." 0
         if (-not $DryRun) {
-            $wingetUrl = "https://github.com/microsoft/winget-cli/releases/download/latest/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle"
+            $wingetUrl = "https://github.com/microsoft/winget-cli/releases/download/v1.9.25180/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle"
             $wingetPath = Join-Path $script:tempDir "Microsoft.DesktopAppInstaller.msixbundle"
             Invoke-WebRequest -Uri $wingetUrl -OutFile $wingetPath
             Add-AppxPackage -Path $wingetPath
