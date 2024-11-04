@@ -759,7 +759,9 @@ By default, the following components are installed:
     $consoleOutput.Font = New-Object Drawing.Font("Cascadia Code", 9)
     $consoleOutput.Dock = [System.Windows.Forms.DockStyle]::Fill
     $consoleOutput.ScrollBars = "Vertical"
-    $consoleOutput.WordWrap = $true
+
+    # Add ConsoleOutput to ConsolePanel
+    $consolePanel.Controls.Add($consoleOutput, 0, 1)  # Ensure it's placed in the correct row and column
 
     $consolePanel.Controls.Add($consoleHeader, 0, 0)
     $consolePanel.Controls.Add($consoleOutput, 0, 1)
@@ -1219,6 +1221,8 @@ function Test-WingetInstalled {
             $output = Add-AppxPackage 'https://github.com/cryptofyre/IoT-Configurator/releases/download/assets/Microsoft.UI.Xaml.2.8_8.2310.30001.0_x64.appx' 2>&1 | Out-String
             $UI.WriteToConsole.Invoke($output, "Info")
             $output = Add-AppxPackage 'https://github.com/cryptofyre/IoT-Configurator/releases/download/assets/Microsoft.VCLibs.140.00.UWPDesktop_14.0.33728.0_x64.appx' 2>&1 | Out-String
+            $UI.WriteToConsole.Invoke($output, "Info")
+            $output = Add-AppxPackage 'https://github.com/cryptofyre/IoT-Configurator/releases/download/assets/Microsoft.VCLibs.140.00_14.0.33519.0_x64__8wekyb3d8bbwe.Appx' 2>&1 | Out-String
             $UI.WriteToConsole.Invoke($output, "Info")
             $output = Add-AppPackage 'https://github.com/cryptofyre/IoT-Configurator/releases/download/assets/Microsoft.WindowsAppRuntime.1.5_5001.275.500.0_x64__8wekyb3d8bbwe.Msix' 2>&1 | Out-String
             $UI.WriteToConsole.Invoke($output, "Info")
