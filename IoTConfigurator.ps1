@@ -406,6 +406,7 @@ function New-SetupUI {
     $activateWindowsCheckbox = New-Object CheckBox
     $activateWindowsCheckbox.Name = "ActivateWindowsCheckbox"
     $activateWindowsCheckbox.Text = "Activate Windows"
+    $activateWindowsCheckbox.Checked = $true
     $activateWindowsCheckbox.AutoSize = $true
     $activateWindowsCheckbox.ForeColor = $script:theme.Foreground
     $activateWindowsCheckbox.Margin = New-Object System.Windows.Forms.Padding(5)
