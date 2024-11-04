@@ -720,7 +720,7 @@ function New-SetupUI {
     }
 
     # Create initial console message
-    & $WriteToConsole "Setup initialized. Waiting for user input..." "Info"
+    & $UI.WriteToConsole "Setup initialized. Waiting for user input..." "Info"
 
     # Return all UI elements and functions
     return @{
@@ -781,7 +781,7 @@ function New-SetupUI {
         
         ClearConsole = {
             $consoleOutput.Clear()
-            & $WriteToConsole "Console cleared." "Info"
+            & $UI.WriteToConsole "Console cleared." "Info"
         }
         
         SetProgress = {
