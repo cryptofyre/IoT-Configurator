@@ -111,13 +111,13 @@ function Update-Progress {
     $progressPercentage = [math]::Round(($script:currentStep / $script:totalSteps) * 100, 2)
     
     # Update ProgressBar value
-    $UI.ProgressBar.Invoke([Action] { $_.Value = $progressPercentage })
+    $UI.ProgressBar.Invoke([Action] { $UI.ProgressBar.Value = $progressPercentage })
 
     # Update Status Label
-    $UI.StatusLabel.Invoke([Action] { $_.Text = $Status })
+    $UI.StatusLabel.Invoke([Action] { $UI.StatusLabel.Text = $Status })
 
     # Refresh UI
-    $UI.Form.Invoke([Action] { $_.Refresh() })
+    $UI.Form.Invoke([Action] { $UI.Form.Refresh() })
 }
 
 # Get the current script path
