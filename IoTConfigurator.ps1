@@ -60,7 +60,7 @@ $script:currentStep = 0
 $script:tempDir = Join-Path $env:TEMP "Win11IoTSetup"
 
 # Calculate total steps based on selected options
-function Calculate-TotalSteps {
+function Measure-TotalSteps {
     # Initialize totalSteps based on selected options
     $script:totalSteps = 0
 
@@ -114,7 +114,7 @@ function Update-Progress {
     $UI.ProgressBar.Invoke({ $_.Value = $using:progressPercentage })
 
     # Update Status Label
-    $UI.StatusLabel.Invoke({ $_.Text = $Status })
+    $UI.StatusLabel.Invoke({ $_.Text = $using:Status })
 
     # Refresh UI
     $UI.Form.Invoke({ $_.Refresh() })
@@ -177,7 +177,6 @@ function Set-RequiredExecutionPolicy {
 
 # Verify Windows version and edition
 function Test-WindowsCompatibility {
-    $os = Get-WmiObject -Class Win32_OperatingSystem
     $windowsVersion = [System.Environment]::OSVersion.Version
     
     if ($windowsVersion.Major -lt 10 -or ($windowsVersion.Major -eq 10 -and $windowsVersion.Build -lt 22000)) {
@@ -577,8 +576,96 @@ function New-SetupUI {
 
     $featuresTab.Controls.Add($featuresLayout)
 
+    # Create Extras Tab
+    $extrasTab = New-Object TabPage
+    $extrasTab.Text = "Extras"
+    $extrasTab.BackColor = $script:theme.TabBackground
+    $extrasTab.ForeColor = $script:theme.Foreground
+    $extrasTab.Padding = New-Object System.Windows.Forms.Padding(15)
+
+    # Extras Layout
+    $extrasLayout = New-Object TableLayoutPanel
+    $extrasLayout.AutoSize = $true
+    $extrasLayout.Dock = [System.Windows.Forms.DockStyle]::Fill
+    $extrasLayout.ColumnCount = 1
+    $extrasLayout.RowCount = 2
+    $extrasLayout.RowStyles.Add((New-Object RowStyle([System.Windows.Forms.SizeType]::AutoSize)))
+    $extrasLayout.RowStyles.Add((New-Object RowStyle([System.Windows.Forms.SizeType]::AutoSize)))
+
+    # Programs Section
+    $programsGroup = New-Object GroupBox
+    $programsGroup.Text = "Recommended Programs"
+    $programsGroup.ForeColor = $script:theme.Foreground
+    $programsGroup.Dock = [System.Windows.Forms.DockStyle]::Top
+    $programsGroup.AutoSize = $true
+
+    $programsLayout = New-Object TableLayoutPanel
+    $programsLayout.AutoSize = $true
+    $programsLayout.Dock = [System.Windows.Forms.DockStyle]::Fill
+    $programsLayout.ColumnCount = 1
+
+    # Program Links
+    $ciderLink = New-Object LinkLabel
+    $ciderLink.Text = "Cider"
+    $ciderLink.Links.Add(0, $ciderLink.Text.Length, "https://cider.sh/")
+    $ciderLink.LinkColor = $script:theme.AccentPrimary
+    $ciderLink.ActiveLinkColor = $script:theme.AccentSecondary
+    $ciderLink.VisitedLinkColor = $script:theme.AccentPrimary
+    $ciderLink.ForeColor = $script:theme.Foreground
+    $ciderLink.Margin = New-Object System.Windows.Forms.Padding(5)
+
+    $affinityLink = New-Object LinkLabel
+    $affinityLink.Text = "Affinity"
+    $affinityLink.Links.Add(0, $affinityLink.Text.Length, "https://affinity.serif.com/")
+    $affinityLink.LinkColor = $script:theme.AccentPrimary
+    $affinityLink.ActiveLinkColor = $script:theme.AccentSecondary
+    $affinityLink.VisitedLinkColor = $script:theme.AccentPrimary
+    $affinityLink.ForeColor = $script:theme.Foreground
+    $affinityLink.Margin = New-Object System.Windows.Forms.Padding(5)
+
+    # Link Click Events
+    $ciderLink.Add_LinkClicked({ Start-Process $ciderLink.Links[0].LinkData })
+    $affinityLink.Add_LinkClicked({ Start-Process $affinityLink.Links[0].LinkData })
+
+    $programsLayout.Controls.Add($ciderLink)
+    $programsLayout.Controls.Add($affinityLink)
+
+    $programsGroup.Controls.Add($programsLayout)
+    $extrasLayout.Controls.Add($programsGroup)
+
+    # Explanation Section
+    $explanationGroup = New-Object GroupBox
+    $explanationGroup.Text = "Installed by Default"
+    $explanationGroup.ForeColor = $script:theme.Foreground
+    $explanationGroup.Dock = [System.Windows.Forms.DockStyle]::Top
+    $explanationGroup.AutoSize = $true
+
+    $explanationText = @"
+By default, the following components are installed:
+- PowerShell 7
+- UniGet
+- HEVC, WebM, and AV1 codecs
+- Media Feature Pack
+- .NET Runtime
+- VC++ Redistributable
+"@
+    $explanationLabel = New-Object Label
+    $explanationLabel.Text = $explanationText
+    $explanationLabel.ForeColor = $script:theme.Foreground
+    $explanationLabel.Dock = [System.Windows.Forms.DockStyle]::Fill
+    $explanationLabel.AutoSize = $true
+
+    $explanationGroup.Controls.Add($explanationLabel)
+    $extrasLayout.Controls.Add($explanationGroup)
+
+    $extrasTab.Controls.Add($extrasLayout)
+
     # Add all tabs to TabControl
     $tabControl.Controls.AddRange(@($basicTab, $devTab, $featuresTab))
+
+    # Add Extras tab last
+    $tabControl.Controls.Add($extrasTab)
+
     $mainLayout.Controls.Add($tabControl, 0, 0)
 
     # Apply theme colors to TabControl and TabPages
@@ -594,25 +681,25 @@ function New-SetupUI {
 
     # Add Paint event handler to set background behind tabs
     $tabControl.Add_Paint({
-        param($sender, $e)
+        param($eventSender, $e)
         # Fill the area behind the tabs with ConsoleBackground color
-        $tabRect = $sender.GetTabRect(0)
+        $tabRect = $eventSender.GetTabRect(0)
         $tabRect.Height += 10  # Adjust height if necessary
-        $e.Graphics.FillRectangle((New-Object System.Drawing.SolidBrush($script:theme.ConsoleBackground)), 0, 0, $sender.Width, $tabRect.Height)
+        $e.Graphics.FillRectangle((New-Object System.Drawing.SolidBrush($script:theme.ConsoleBackground)), 0, 0, $eventSender.Width, $tabRect.Height)
     })
 
     # Adjust the event handler to use ConsoleHeader color styling
     $tabControl.Add_DrawItem({
-        param($sender, $e)
+        param($eventSender, $e)
         $g = $e.Graphics
-        $tabPage = $sender.TabPages.Item($e.Index)
-        $tabBounds = $sender.GetTabRect($e.Index)
+        $tabPage = $eventSender.TabPages.Item($e.Index)
+        $tabBounds = $eventSender.GetTabRect($e.Index)
 
         # Convert $tabBounds to RectangleF
         $tabBoundsF = [System.Drawing.RectangleF]$tabBounds
 
         # Use $script:theme to access the ConsoleHeader colors
-        if ($sender.SelectedIndex -eq $e.Index) {
+        if ($eventSender.SelectedIndex -eq $e.Index) {
             $backColor = $script:theme.ConsoleBackground
             $foreColor = $script:theme.AccentPrimary
         } else {
@@ -624,7 +711,7 @@ function New-SetupUI {
         $g.FillRectangle((New-Object System.Drawing.SolidBrush($backColor)), $tabBounds)
 
         # Draw the tab text using $tabBoundsF
-        $g.DrawString($tabPage.Text, $sender.Font, (New-Object System.Drawing.SolidBrush($foreColor)), $tabBoundsF, $stringFlags)
+        $g.DrawString($tabPage.Text, $eventSender.Font, (New-Object System.Drawing.SolidBrush($foreColor)), $tabBoundsF, $stringFlags)
     })
 
     # Console Panel
@@ -732,14 +819,18 @@ function New-SetupUI {
     $form.Controls.Add($mainLayout)
 
     # Console write function
-    $WriteToConsole = {
+    function WriteToConsole {
         param(
             [string]$Message,
             [string]$Type = "Info"  # Options: Info, Success, Warning, Error
         )
         
+        # Check if the handle has been created
+        if (-not $consoleOutput.IsHandleCreated) {
+            return  # Exit the function if the handle is not created
+        }
+        
         $consoleOutput.Invoke({
-            param($Message, $Type)
             $timestamp = Get-Date -Format "HH:mm:ss"
             $color = switch ($Type) {
                 "Success" { $script:theme.AccentSecondary }
@@ -748,21 +839,22 @@ function New-SetupUI {
                 default { $script:theme.ConsoleForeground }
             }
 
-            # Ensure $consoleOutput is accessible within the scriptblock
             if ($consoleOutput -and $consoleOutput -is [System.Windows.Forms.RichTextBox]) {
-                $consoleOutput.SelectionStart = $consoleOutput.TextLength
-                $consoleOutput.SelectionLength = 0
-                $consoleOutput.SelectionColor = $script:theme.ForegroundDim
-                $consoleOutput.AppendText("[$timestamp] ")
                 $consoleOutput.SelectionColor = $color
-                $consoleOutput.AppendText("$Message`r`n")
+                $consoleOutput.AppendText("$using:Message`r`n")
                 $consoleOutput.ScrollToCaret()
             }
-        }, $Message, $Type)
+        })
     }
 
-    # Create initial console message
-    & $WriteToConsole "Setup initialized. Waiting for user input..." "Info"
+    # Add the Shown event handler to the form
+    $form.Add_Shown({
+        if ($null -ne $UI.WriteToConsole) {
+            $UI.WriteToConsole.Invoke("Setup initialized. Waiting for user input...", "Info")
+        } else {
+            Write-Error "WriteToConsole function is not initialized."
+        }
+    })
 
     # Return all UI elements and functions
     return @{
@@ -771,7 +863,7 @@ function New-SetupUI {
         ProgressBar = $progressBar
         StatusLabel = $statusLabel
         ConsoleOutput = $consoleOutput
-        WriteToConsole = $WriteToConsole
+        WriteToConsole = $WriteToConsole  # Ensure WriteToConsole is assigned here
         
         # Basic Setup Tab Elements
         StoreCheckbox = $checkboxes["StoreCheckbox"]
@@ -817,13 +909,13 @@ function New-SetupUI {
         
         # Helper Functions
         RefreshUI = {
-            param($sender, $e)
+            param($eventSender, $e)
             $form.Refresh()
         }
         
         ClearConsole = {
             $consoleOutput.Clear()
-            & $WriteToConsole "Console cleared." "Info"
+            $UI.WriteToConsole.Invoke("Console cleared.", "Info")
         }
         
         SetProgress = {
@@ -1087,7 +1179,7 @@ function Install-DevelopmentTools {
 }
 
 # Function to check for winget installation and install if missing
-function Ensure-WingetInstalled {
+function Test-WingetInstalled {
     if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
         # Install VCLibs dependency for winget
         Update-Progress "Installing VCLibs..."
@@ -1113,19 +1205,19 @@ function Ensure-WingetInstalled {
 function Install-WindowsActivation {
     Update-Progress "Activating Windows..."
     if (-not $DryRun) {
-        $output = & ([ScriptBlock]::Create((irm https://get.activated.win))) /HWID 2>&1 | Out-String
+        $output = Invoke-RestMethod "https://get.activated.win" /HWID 2>&1 | Out-String
         & $UI.WriteToConsole $output "Info"
     }
 }
 
 function Start-InstallationProcess {
     # Calculate total steps based on selected options
-    Calculate-TotalSteps
+    Measure-TotalSteps
     $script:currentStep = 0
     
     try {
         # Ensure winget is installed
-        Ensure-WingetInstalled
+        Test-WingetInstalled
         
         # Core installations
         Install-BasicRequirements
@@ -1188,7 +1280,7 @@ try {
     Initialize-Requirements
 
     # Calculate total steps before starting installation
-    Calculate-TotalSteps
+    Measure-TotalSteps
 
     # Create and show UI
     $UI = New-SetupUI
