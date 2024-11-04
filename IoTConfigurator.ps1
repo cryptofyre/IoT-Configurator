@@ -807,9 +807,7 @@ function Install-BasicRequirements {
 
     Update-Progress "Installing Uniget..." 2
     if (-not $DryRun) {
-        # Download and install UniGet from the new URL
-        Start-BitsTransfer -Source "https://github.com/marticliment/UniGetUI/releases/latest/download/WingetUI.Installer.exe" -Destination "$script:tempDir\WingetUI.Installer.exe"
-        Start-Process -FilePath "$script:tempDir\WingetUI.Installer.exe" -Wait
+        winget install --exact --id MartiCliment.UniGetUI --source winget
     }
 }
 
