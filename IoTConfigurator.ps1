@@ -111,13 +111,13 @@ function Update-Progress {
     $progressPercentage = [math]::Round(($script:currentStep / $script:totalSteps) * 100, 2)
     
     # Update ProgressBar value
-    $UI.ProgressBar.Invoke([Action] { $UI.ProgressBar.Value = $progressPercentage })
+    $UI.ProgressBar.Invoke([System.Windows.Forms.MethodInvoker] { $UI.ProgressBar.Value = $progressPercentage })
 
     # Update Status Label
-    $UI.StatusLabel.Invoke([Action] { $UI.StatusLabel.Text = $Status })
+    $UI.StatusLabel.Invoke([System.Windows.Forms.MethodInvoker] { $UI.StatusLabel.Text = $Status })
 
     # Refresh UI
-    $UI.Form.Invoke([Action] { $UI.Form.Refresh() })
+    $UI.Form.Invoke([System.Windows.Forms.MethodInvoker] { $UI.Form.Refresh() })
 }
 
 # Get the current script path
@@ -846,7 +846,7 @@ By default, the following components are installed:
             return  # Exit the function if the handle is not created
         }
         
-        $consoleOutput.Invoke([Action] {
+        $consoleOutput.Invoke([System.Windows.Forms.MethodInvoker] {
             $timestamp = Get-Date -Format "HH:mm:ss"
             $color = switch ($Type) {
                 "Success" { $script:theme.AccentSecondary }
