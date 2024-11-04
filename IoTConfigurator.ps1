@@ -75,6 +75,8 @@ function Measure-TotalSteps {
     if ($UI.TerminalCheckbox.Checked) { $script:totalSteps += 1 }
     if ($UI.NotepadCheckbox.Checked) { $script:totalSteps += 1 }
     if ($UI.PaintCheckbox.Checked) { $script:totalSteps += 1 }
+    if ($UI.PhotosCheckbox.Checked) { $script:totalSteps += 1 }
+    if ($UI.PowerToysCheckbox.Checked) { $script:totalSteps += 1 }
 
     # Windows Features
     if ($UI.SandboxCheckbox.Checked) { $script:totalSteps += 1 }
@@ -1053,7 +1055,7 @@ function Install-ModernApps {
     if ($UI.StoreCheckbox.Checked) {
         Update-Progress "Installing Microsoft Store..."
         if (-not $DryRun) {
-            $output = Add-AppxPackage -RegisterByFamilyName -MainPackage "Microsoft.WindowsStore_8wekyb3d8bbwe" 2>&1 | Out-String
+            $output = wsreset -i 2>&1 | Out-String
             $UI.WriteToConsole.Invoke($output, "Info")
         }
     }
