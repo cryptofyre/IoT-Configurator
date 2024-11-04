@@ -693,10 +693,10 @@ function New-SetupUI {
     $form.Controls.Add($mainLayout)
 
     # Console write function
-    function Write-ToConsole {
+    $WriteToConsole = {
         param(
             [string]$Message,
-            [string]$Type = "Info"  # Info, Success, Warning, Error
+            [string]$Type = "Info"  # Options: Info, Success, Warning, Error
         )
         
         $timestamp = Get-Date -Format "HH:mm:ss"
@@ -707,17 +707,20 @@ function New-SetupUI {
             default { $script:theme.ConsoleForeground }
         }
 
-        $consoleOutput.SelectionStart = $consoleOutput.TextLength
-        $consoleOutput.SelectionLength = 0
-        $consoleOutput.SelectionColor = $script:theme.ForegroundDim
-        $consoleOutput.AppendText("[$timestamp] ")
-        $consoleOutput.SelectionColor = $color
-        $consoleOutput.AppendText("$Message`r`n")
-        $consoleOutput.ScrollToCaret()
+        # Ensure $consoleOutput is accessible within the scriptblock
+        if ($consoleOutput -and $consoleOutput -is [System.Windows.Forms.RichTextBox]) {
+            $consoleOutput.SelectionStart = $consoleOutput.TextLength
+            $consoleOutput.SelectionLength = 0
+            $consoleOutput.SelectionColor = $script:theme.ForegroundDim
+            $consoleOutput.AppendText("[$timestamp] ")
+            $consoleOutput.SelectionColor = $color
+            $consoleOutput.AppendText("$Message`r`n")
+            $consoleOutput.ScrollToCaret()
+        }
     }
 
     # Create initial console message
-    Write-ToConsole "Setup initialized. Waiting for user input..." "Info"
+    & $WriteToConsole "Setup initialized. Waiting for user input..." "Info"
 
     # Return all UI elements and functions
     return @{
@@ -726,7 +729,7 @@ function New-SetupUI {
         ProgressBar = $progressBar
         StatusLabel = $statusLabel
         ConsoleOutput = $consoleOutput
-        WriteToConsole = ${function:Write-ToConsole}
+        WriteToConsole = $WriteToConsole
         
         # Basic Setup Tab Elements
         StoreCheckbox = $checkboxes["StoreCheckbox"]
@@ -778,7 +781,7 @@ function New-SetupUI {
         
         ClearConsole = {
             $consoleOutput.Clear()
-            Write-ToConsole "Console cleared." "Info"
+            & $WriteToConsole "Console cleared." "Info"
         }
         
         SetProgress = {
@@ -1072,6 +1075,7 @@ function Start-InstallationProcess {
     }
     catch {
         Write-Error "An error occurred during installation: $_"
+        & $UI.WriteToConsole "An error occurred during installation: $_" "Error"
         if (-not $DryRun) {
             [System.Windows.Forms.MessageBox]::Show(
                 "An error occurred during installation: $_`nCheck the log for details.",
@@ -1114,6 +1118,7 @@ try {
 }
 catch {
     Write-Error "A critical error occurred during setup initialization: $_"
+    & $UI.WriteToConsole "A critical error occurred during setup initialization: $_" "Error"
     exit 1
 }
 finally {
