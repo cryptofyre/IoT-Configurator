@@ -728,24 +728,27 @@ function New-SetupUI {
             [string]$Type = "Info"  # Options: Info, Success, Warning, Error
         )
         
-        $timestamp = Get-Date -Format "HH:mm:ss"
-        $color = switch ($Type) {
-            "Success" { $script:theme.AccentSecondary }
-            "Warning" { [System.Drawing.Color]::Orange }
-            "Error" { [System.Drawing.Color]::Red }
-            default { $script:theme.ConsoleForeground }
-        }
+        $consoleOutput.Invoke({
+            param($Message, $Type)
+            $timestamp = Get-Date -Format "HH:mm:ss"
+            $color = switch ($Type) {
+                "Success" { $script:theme.AccentSecondary }
+                "Warning" { [System.Drawing.Color]::Orange }
+                "Error" { [System.Drawing.Color]::Red }
+                default { $script:theme.ConsoleForeground }
+            }
 
-        # Ensure $consoleOutput is accessible within the scriptblock
-        if ($consoleOutput -and $consoleOutput -is [System.Windows.Forms.RichTextBox]) {
-            $consoleOutput.SelectionStart = $consoleOutput.TextLength
-            $consoleOutput.SelectionLength = 0
-            $consoleOutput.SelectionColor = $script:theme.ForegroundDim
-            $consoleOutput.AppendText("[$timestamp] ")
-            $consoleOutput.SelectionColor = $color
-            $consoleOutput.AppendText("$Message`r`n")
-            $consoleOutput.ScrollToCaret()
-        }
+            # Ensure $consoleOutput is accessible within the scriptblock
+            if ($consoleOutput -and $consoleOutput -is [System.Windows.Forms.RichTextBox]) {
+                $consoleOutput.SelectionStart = $consoleOutput.TextLength
+                $consoleOutput.SelectionLength = 0
+                $consoleOutput.SelectionColor = $script:theme.ForegroundDim
+                $consoleOutput.AppendText("[$timestamp] ")
+                $consoleOutput.SelectionColor = $color
+                $consoleOutput.AppendText("$Message`r`n")
+                $consoleOutput.ScrollToCaret()
+            }
+        }, $Message, $Type)
     }
 
     # Create initial console message
