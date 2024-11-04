@@ -707,15 +707,15 @@ function New-SetupUI {
             default { $script:theme.ConsoleForeground }
         }
 
-        # Ensure $consoleOutput is accessible within the scriptblock
-        if ($consoleOutput -and $consoleOutput -is [System.Windows.Forms.RichTextBox]) {
-            $consoleOutput.SelectionStart = $consoleOutput.TextLength
-            $consoleOutput.SelectionLength = 0
-            $consoleOutput.SelectionColor = $script:theme.ForegroundDim
-            $consoleOutput.AppendText("[$timestamp] ")
-            $consoleOutput.SelectionColor = $color
-            $consoleOutput.AppendText("$Message`r`n")
-            $consoleOutput.ScrollToCaret()
+        # Reference the RichTextBox from the UI object
+        if ($UI.ConsoleOutput -and $UI.ConsoleOutput -is [System.Windows.Forms.RichTextBox]) {
+            $UI.ConsoleOutput.SelectionStart = $UI.ConsoleOutput.TextLength
+            $UI.ConsoleOutput.SelectionLength = 0
+            $UI.ConsoleOutput.SelectionColor = $script:theme.ForegroundDim
+            $UI.ConsoleOutput.AppendText("[$timestamp] ")
+            $UI.ConsoleOutput.SelectionColor = $color
+            $UI.ConsoleOutput.AppendText("$Message`r`n")
+            $UI.ConsoleOutput.ScrollToCaret()
         }
     }
 
