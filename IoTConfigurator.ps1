@@ -1017,6 +1017,12 @@ function Install-DevelopmentTools {
 # Function to check for winget installation and install if missing
 function Ensure-WingetInstalled {
     if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
+        # Install VCLibs dependency for winget
+        Update-Progress "Installing VCLibs..." 0
+        if (-not $DryRun) {
+            Add-AppxPackage 'https://aka.ms/Microsoft.VCLibs.x64.14.00.Desktop.appx'
+        }
+
         Update-Progress "Installing Winget..." 0
         if (-not $DryRun) {
             $wingetUrl = "https://github.com/microsoft/winget-cli/releases/download/v1.9.25180/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle"
