@@ -61,34 +61,38 @@ $script:tempDir = Join-Path $env:TEMP "Win11IoTSetup"
 
 # Calculate total steps based on selected options
 function Calculate-TotalSteps {
-    $steps = 0
-    # Basic Requirements
-    $steps += 2
-    # Media Components
-    $steps += 5
-    # Selected Browser
-    if ($UI.BrowserComboBox.SelectedItem) { $steps += 1 }
-    # Modern Apps
-    if ($UI.StoreCheckbox.Checked) { $steps += 1 }
-    if ($UI.TerminalCheckbox.Checked) { $steps += 1 }
-    if ($UI.NotepadCheckbox.Checked) { $steps += 1 }
-    if ($UI.PaintCheckbox.Checked) { $steps += 1 }
+    # Initialize totalSteps based on selected options
+    $script:totalSteps = 0
+
+    # Core installations
+    $script:totalSteps += 2  # Install-BasicRequirements and Install-MediaComponents
+
+    # Browser installation
+    if ($UI.BrowserComboBox.SelectedItem) { $script:totalSteps += 1 }
+
+    # Optional installations
+    if ($UI.StoreCheckbox.Checked) { $script:totalSteps += 1 }
+    if ($UI.TerminalCheckbox.Checked) { $script:totalSteps += 1 }
+    if ($UI.NotepadCheckbox.Checked) { $script:totalSteps += 1 }
+    if ($UI.PaintCheckbox.Checked) { $script:totalSteps += 1 }
+
     # Windows Features
-    if ($UI.SandboxCheckbox.Checked) { $steps += 2 }
-    if ($UI.WSLCheckbox.Checked) { $steps += 1 }
+    if ($UI.SandboxCheckbox.Checked) { $script:totalSteps += 1 }
+    if ($UI.WSLCheckbox.Checked) { $script:totalSteps += 1 }
+
     # Development Tools
-    if ($UI.VSCheckbox.Checked) { $steps += 1 }
-    if ($UI.VSCodeCheckbox.Checked) { $steps += 1 }
-    if ($UI.DotNetCheckbox.Checked) { $steps += 3 }
-    if ($UI.NodeCheckbox.Checked) { $steps += 1 }
-    if ($UI.GoCheckbox.Checked) { $steps += 1 }
-    if ($UI.RustCheckbox.Checked) { $steps += 1 }
-    if ($UI.LLVMCheckbox.Checked) { $steps += 1 }
-    if ($UI.ScoopCheckbox.Checked) { $steps += 1 }
-    if ($UI.ChocoCheckbox.Checked) { $steps += 1 }
+    if ($UI.VSCheckbox.Checked) { $script:totalSteps += 1 }
+    if ($UI.VSCodeCheckbox.Checked) { $script:totalSteps += 1 }
+    if ($UI.DotNetCheckbox.Checked) { $script:totalSteps += 3 }
+    if ($UI.NodeCheckbox.Checked) { $script:totalSteps += 1 }
+    if ($UI.GoCheckbox.Checked) { $script:totalSteps += 1 }
+    if ($UI.RustCheckbox.Checked) { $script:totalSteps += 1 }
+    if ($UI.LLVMCheckbox.Checked) { $script:totalSteps += 1 }
+    if ($UI.ScoopCheckbox.Checked) { $script:totalSteps += 1 }
+    if ($UI.ChocoCheckbox.Checked) { $script:totalSteps += 1 }
+
     # Windows Activation
-    if ($UI.ActivateWindowsCheckbox.Checked) { $steps += 1 }
-    $script:totalSteps = $steps
+    if ($UI.ActivateWindowsCheckbox.Checked) { $script:totalSteps += 1 }
 }
 
 # Update progress bar
@@ -96,18 +100,24 @@ function Update-Progress {
     param(
         [string]$Status
     )
+    
+    # Increment currentStep safely
     $script:currentStep++
-    $percentage = [math]::Min(100, [math]::Round(($script:currentStep / $script:totalSteps) * 100))
-    
-    if ($UI -and $UI.SetProgress) {
-        & $UI.SetProgress $percentage $Status
+    if ($script:currentStep -gt $script:totalSteps) {
+        $script:currentStep = $script:totalSteps
     }
+
+    # Calculate progress percentage
+    $progressPercentage = [math]::Round(($script:currentStep / $script:totalSteps) * 100, 2)
     
-    if ($UI -and $UI.WriteToConsole) {
-        & $UI.WriteToConsole $Status "Info"
-    } else {
-        Write-Host $Status
-    }
+    # Update ProgressBar value
+    $UI.ProgressBar.Invoke({ $_.Value = $using:progressPercentage })
+
+    # Update Status Label
+    $UI.StatusLabel.Invoke({ $_.Text = $Status })
+
+    # Refresh UI
+    $UI.Form.Invoke({ $_.Refresh() })
 }
 
 # Get the current script path
