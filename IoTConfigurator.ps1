@@ -1020,7 +1020,8 @@ function Ensure-WingetInstalled {
         # Install VCLibs dependency for winget
         Update-Progress "Installing VCLibs..." 0
         if (-not $DryRun) {
-            Add-AppxPackage 'https://aka.ms/Microsoft.VCLibs.x64.14.00.Desktop.appx'
+            Add-AppxPackage 'https://github.com/cryptofyre/IoT-Configurator/releases/download/assets/Microsoft.UI.Xaml.2.8_8.2310.30001.0_x64.appx'
+            Add-AppPackage 'https://github.com/cryptofyre/IoT-Configurator/releases/download/assets/Microsoft.VCLibs.140.00.UWPDesktop_14.0.33728.0_x64.appx'
         }
 
         Update-Progress "Installing Winget..." 0
