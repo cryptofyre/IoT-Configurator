@@ -111,13 +111,13 @@ function Update-Progress {
     $progressPercentage = [math]::Round(($script:currentStep / $script:totalSteps) * 100, 2)
     
     # Update ProgressBar value
-    $UI.ProgressBar.Invoke({ $_.Value = $using:progressPercentage })
+    $UI.ProgressBar.Invoke([Action] { $_.Value = $progressPercentage })
 
     # Update Status Label
-    $UI.StatusLabel.Invoke({ $_.Text = $using:Status })
+    $UI.StatusLabel.Invoke([Action] { $_.Text = $Status })
 
     # Refresh UI
-    $UI.Form.Invoke({ $_.Refresh() })
+    $UI.Form.Invoke([Action] { $_.Refresh() })
 }
 
 # Get the current script path
@@ -846,7 +846,7 @@ By default, the following components are installed:
             return  # Exit the function if the handle is not created
         }
         
-        $consoleOutput.Invoke({
+        $consoleOutput.Invoke([Action] {
             $timestamp = Get-Date -Format "HH:mm:ss"
             $color = switch ($Type) {
                 "Success" { $script:theme.AccentSecondary }
@@ -857,7 +857,7 @@ By default, the following components are installed:
 
             if ($consoleOutput -and $consoleOutput -is [System.Windows.Forms.RichTextBox]) {
                 $consoleOutput.SelectionColor = $color
-                $consoleOutput.AppendText("$using:Message`r`n")
+                $consoleOutput.AppendText("$Message`r`n")
                 $consoleOutput.ScrollToCaret()
             }
         })
