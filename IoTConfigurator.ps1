@@ -649,7 +649,8 @@ function New-SetupUI {
     $statusLabel.Font = New-Object Drawing.Font("Segoe UI", 10)
 
     # Progress Bar
-    $progressBar = New-Object ProgressBar
+    $progressBar = New-Object System.Windows.Forms.ProgressBar
+    $progressBar.Name = "MainProgressBar"  # Ensure the ProgressBar has a Name
     $progressBar.Dock = [System.Windows.Forms.DockStyle]::Top
     $progressBar.Style = "Continuous"
     $progressBar.Height = 25
@@ -785,9 +786,11 @@ function New-SetupUI {
                 [int]$Value,
                 [string]$Status
             )
-            $progressBar.Value = $Value
-            $statusLabel.Text = $Status
-            $form.Refresh()
+            if ($UI.ProgressBar -and $UI.ProgressBar -is [System.Windows.Forms.ProgressBar]) {
+                $UI.ProgressBar.Value = [Math]::Min($Value, $UI.ProgressBar.Maximum)  # Safeguard the Value assignment
+            }
+            $UI.StatusLabel.Text = $Status
+            $UI.Form.Refresh()
         }
     }
 }
